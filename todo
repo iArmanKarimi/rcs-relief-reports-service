@@ -1,0 +1,5 @@
+📋 TODO: Post-MVP Roadmap (Session Management)
+[ ] Database Schema: Add bale_user_id (indexed, nullable) to StaffContact model to store unique persistent user identifiers.
+[ ] API Enhancement: Create a “Link Account” endpoint that updates a StaffContact record with the bale_user_id after initial NID/Phone verification.
+[ ] Access Logic: Implement a session-aware get_report endpoint that retrieves the national_id via the bale_user_id rather than requiring manual input every time.
+[ ] Rate limit: if wrong nid_phone > 3 -> lock -> admin can unlock in panel

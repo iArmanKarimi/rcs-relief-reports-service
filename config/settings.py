@@ -33,16 +33,16 @@ BALE_BOT_API_KEY = os.environ.get('BALE_BOT_API_KEY')
 # Application definition
 
 INSTALLED_APPS = [
+    # pkg
+    'import_export',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # pkg
-    'import_export',
     # apps
-    'reports'
+    'reports',
 ]
 
 MIDDLEWARE = [
@@ -119,5 +119,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+# The directory where collectstatic will gather all static files
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = 'static/'

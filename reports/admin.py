@@ -1,9 +1,12 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group, User
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from .models import EmployeeReport, StaffContact
 
-# 1. Define the Resource for import/export logic
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
 class EmployeeReportResource(resources.ModelResource):
     class Meta:
         model = EmployeeReport
@@ -14,7 +17,6 @@ class EmployeeReportResource(resources.ModelResource):
         # Skips rows that have no changes compared to the database
         skip_unchanged = True
 
-# 2. Register the EmployeeReport with ImportExportModelAdmin
 @admin.register(EmployeeReport)
 class EmployeeReportAdmin(ImportExportModelAdmin):
     resource_class = EmployeeReportResource
@@ -35,7 +37,6 @@ class EmployeeReportAdmin(ImportExportModelAdmin):
     def test_button(self, request, queryset):
         self.message_user(request, "دکمه‌ها کار می‌کنند!")
 
-# 3. Register the StaffContact model
 @admin.register(StaffContact)
 class StaffContactAdmin(admin.ModelAdmin):
     list_display = ('national_id', 'phone_number')

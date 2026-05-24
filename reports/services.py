@@ -46,10 +46,8 @@ def import_excel_reports(file_path):
     - data_only=True: Reads calculated formula values instead of raw formulas.
     - with statement: Safely destroys and closes the workbook stream on exit.
     """
-
-    # The context manager ensures everything is closed and garbage-collected
-    # correctly.
-    with openpyxl.load_workbook(file_path, read_only=True, data_only=True) as wb:
+    wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+    try:
         sheet = wb.active
 
         # 1. Wipe existing data
@@ -90,4 +88,6 @@ def import_excel_reports(file_path):
         if reports_to_create:
             EmployeeReport.objects.bulk_create(reports_to_create)
 
-        return len(reports_to_create)
+        return len(reports_to_create)    
+    finally:
+        wb.close()

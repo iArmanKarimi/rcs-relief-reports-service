@@ -10,3 +10,4 @@ def require_api_key(view_func):
             return HttpResponseForbidden("Unauthorized")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+

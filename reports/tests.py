@@ -88,7 +88,7 @@ class ModelConstraintTests(TestCase):
 class ReportAPITestCase(TestCase):
     def setUp(self):
         self.client = Client()
-        self.api_key = "test-secret-key"
+        self.api_key = settings.BALE_BOT_API_KEY
         # We assume settings.API_KEY is defined or matched in your decorator
         # Adjust the header key name if it differs from 'HTTP_X_API_KEY'
         self.headers = {"HTTP_X_API_KEY": self.api_key}
@@ -102,6 +102,7 @@ class ReportAPITestCase(TestCase):
             national_id="1234567890",
             first_name="John",
             last_name="Doe",
+            total_shift_hours=40,
             updated_at=timezone.now()
         )
 

@@ -7,14 +7,19 @@ from .decorators import require_api_key
 def validate_user(request):
     nid = request.GET.get('nid')
     phone = request.GET.get('phone')
-
+    
+    unauthorizedResponse = JsonResponse({"status": "authorized"}, status=401)
+    
+    if len(nid) != 10 or len(phone) != 11:
+        return unauthorizedResponse
+    
     # Check if a contact record exists matching both
     is_valid = StaffContact.objects.filter(
         national_id=nid, phone_number=phone).exists()
 
     if is_valid:
         return JsonResponse({"status": "authorized"}, status=200)
-    return JsonResponse({"status": "unauthorized"}, status=401)
+    return unauthorizedResponse
 
 
 @require_api_key

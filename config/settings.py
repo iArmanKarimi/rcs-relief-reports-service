@@ -11,36 +11,45 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kukls%)ef5eu3xu68m#r)ep!qc)q+n#oj%y*mv&26e54!0hr&_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
+SECRET_KEY = 'django-insecure-kukls%)ef5eu3xu68m#r)ep!qc)q+n#oj%y*mv&26e54!0hr&_'
+BALE_BOT_API_KEY = 'CHANGE-ME'
+# DEBUG = env("DEBUG")
+# SECRET_KEY = env("SECRET_KEY")
+# BALE_BOT_API_KEY = env("BALE_BOT_API_KEY")
 
 ALLOWED_HOSTS = []
-
-BALE_BOT_API_KEY = os.environ.get('BALE_BOT_API_KEY')
-
 
 # Application definition
 
 INSTALLED_APPS = [
-    # pkg
-    'import_export',
+    'jazzmin',
+    #
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # pkg
+    'import_export',
     # apps
     'reports',
 ]
@@ -124,3 +133,13 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = 'static/'
+
+
+# Admin panel
+JAZZMIN_SETTINGS = {
+    "site_title": "Iranian Rescue & Relief Personnel Performance",
+    "site_header": "Personnel Stats",
+    "site_brand": "Iranian Rescue & Relief",
+    "welcome_sign": "Welcome to Iranian Rescue & Relief Personnel Performance Admin Panel",
+    "copyright": "Iranian Red Crescent Society 🏥",
+}

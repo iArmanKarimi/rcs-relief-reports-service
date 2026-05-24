@@ -17,6 +17,13 @@ class EmployeeReportResource(resources.ModelResource):
         # Skips rows that have no changes compared to the database
         skip_unchanged = True
 
+class StaffContactResource(resources.ModelResource):
+    class Meta:
+        model = StaffContact
+        # If you want to control import/export columns explicitly, uncomment:
+        # fields = ("national_id", "phone_number")
+        # import_id_fields = ("national_id",)
+        
 @admin.register(EmployeeReport)
 class EmployeeReportAdmin(ImportExportModelAdmin):
     resource_class = EmployeeReportResource
@@ -30,14 +37,13 @@ class EmployeeReportAdmin(ImportExportModelAdmin):
     )
     search_fields = ('first_name', 'last_name', 'national_id')
     
-    # Optional: Add your custom action back if you still need it
-    actions = ['test_button']
-
-    @admin.action(description="تست دکمه")
-    def test_button(self, request, queryset):
-        self.message_user(request, "دکمه‌ها کار می‌کنند!")
-
+    class Meta:
+        verbose_name = "گزارش کارمند"
+        verbose_name_plural = "گزارش‌های کارمندان"
+        
 @admin.register(StaffContact)
 class StaffContactAdmin(admin.ModelAdmin):
+    resource_class = StaffContactResource
+    
     list_display = ('national_id', 'phone_number')
     search_fields = ('national_id', 'phone_number')

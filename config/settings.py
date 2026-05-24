@@ -40,16 +40,22 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
-    #
+    "unfold", 
+    "unfold.contrib.filters", # optional
+    "unfold.contrib.forms",   # optional
+    "unfold.contrib.inlines", # optional
+    "unfold.contrib.import_export",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # pkg
+    # 3rd party
     'import_export',
+    # 'admin_tools',
+    # 'admin_tools.dashboard',
+    # 'admin_tools.menu',
     # apps
     'reports',
 ]
@@ -121,10 +127,14 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
-USE_I18N = True
-
 USE_TZ = True
 
+LANGUAGE_CODE = 'fa-ir'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+DJANGO_ADMIN_PERSIAN_FONTS_NAME = 'vazir'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
@@ -135,11 +145,46 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = 'static/'
 
 
-# Admin panel
-JAZZMIN_SETTINGS = {
-    "site_title": "Iranian Rescue & Relief Personnel Performance",
-    "site_header": "Personnel Stats",
-    "site_brand": "Iranian Rescue & Relief",
-    "welcome_sign": "Welcome to Iranian Rescue & Relief Personnel Performance Admin Panel",
-    "copyright": "Iranian Red Crescent Society 🏥",
+# ─── Unfold Settings ───────────────────────────────────────────────
+UNFOLD = {
+    "SITE_TITLE": "پنل بله",
+    "SITE_HEADER": "پنل توزیع داده‌های بات بله",
+    "SITE_URL": "/",
+    
+    # Show the Django admin's default sidebar
+    "SHOW_HISTORY": True,  
+    "SHOW_VIEW_ON_SITE": True,
+    
+    # ── Fonts ──
+    # Unfold uses modern system fonts by default that handle Persian well.
+    # If you want Vazirmatn specifically, add a CDN link here:
+    "EXTRA_STYLES": [
+        "https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css",
+    ],
+    
+    # ── Sidebar ──
+    "SIDEBAR": {
+        # "show_search": True,
+        "navigation": [
+            {
+                "title": "اطلاعات کارمندان",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "بارگذاری عملکرد ماهانه",
+                        "icon": "analytics",
+                        "link": "/admin/reports/employeereport/",
+                    },
+                    {
+                        "title": "دفترچه تلفن و احراز هویت", 
+                        "icon": "contacts",
+                        "link": "/admin/reports/staffcontact/",
+                    },
+                ],
+            },
+        ],
+    },
+    
+    # ── Import-Export compatibility ──
+    "TABS": [],
 }

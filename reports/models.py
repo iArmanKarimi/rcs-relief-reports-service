@@ -39,7 +39,7 @@ class EmployeeReport(models.Model):
 
     class Meta:
         verbose_name = "گزارش عملکرد پرسنل"
-        verbose_name_plural = "گزارش‌های عملکرد پرسنل"
+        verbose_name_plural = "گزارش‌ عملکرد پرسنل"
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.national_id}"
@@ -54,3 +54,6 @@ class StaffContact(models.Model):
         indexes = [models.Index(fields=['national_id', 'phone_number'])]
         verbose_name = "اطلاعات تماس "
         verbose_name_plural = "اطلاعات تماس پرسنل"
+
+    def __str__(self):
+        return f"(کد ملی) {self.national_id} - (شماره تماس) {self.phone_number}"

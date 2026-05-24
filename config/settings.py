@@ -40,11 +40,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "unfold", 
+    "unfold",
     "unfold.contrib.filters", # optional
     "unfold.contrib.forms",   # optional
     "unfold.contrib.inlines", # optional
-    "unfold.contrib.import_export",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,7 +51,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 3rd party
-    'import_export',
     # 'admin_tools',
     # 'admin_tools.dashboard',
     # 'admin_tools.menu',
@@ -173,12 +171,12 @@ UNFOLD = {
                     {
                         "title": "بارگذاری عملکرد ماهانه",
                         "icon": "analytics",
-                        "link": "/admin/reports/employeereport/",
+                        "link": "/reports/employeereport/",
                     },
                     {
                         "title": "دفترچه تلفن و احراز هویت", 
                         "icon": "contacts",
-                        "link": "/admin/reports/staffcontact/",
+                        "link": "/reports/staffcontact/",
                     },
                 ],
             },

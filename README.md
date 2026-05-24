@@ -4,16 +4,17 @@ A high-performance Django-based service designed for managing and reporting Iran
 
 ## Setup Instructions
 
-Clone the Repository
+git clone 
 
+```bash
 py -m venv venv
 .\venv\Scripts\Activate.ps1
+```
 
-
-3. Install Dependencies
-
+```bash
 pip install --upgrade pip
 pip install -r requirements.txt
+```
 
 Configure Environment Variables:
 ```
@@ -22,13 +23,15 @@ SECRET_KEY=<your-secret-key>
 BALE_BOT_API_KEY=<your-bale-bot-api-key>
 ```
 
-```cmd
+```bash
 python manage.py migrate
 python manage.py collectstatic
 ```
 
 Run the Application:
-`python manage.py runserver`
+```bash
+python manage.py runserver
+```
 
 
 ### Key Implementation Details

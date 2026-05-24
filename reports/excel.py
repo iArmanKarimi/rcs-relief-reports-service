@@ -88,6 +88,6 @@ def import_excel_reports(file_path):
         if reports_to_create:
             EmployeeReport.objects.bulk_create(reports_to_create)
 
-        return len(reports_to_create)    
+        return len(reports_to_create)
     finally:
         wb.close()

@@ -38,8 +38,8 @@ class EmployeeReport(models.Model):
         "آخرین بروزرسانی", auto_now=True, editable=False)
 
     class Meta:
-        verbose_name = "گزارش پرسنل"
-        verbose_name_plural = "گزارش‌های پرسنل"
+        verbose_name = "گزارش عملکرد پرسنل"
+        verbose_name_plural = "گزارش‌های عملکرد پرسنل"
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.national_id}"
@@ -52,5 +52,5 @@ class StaffContact(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['national_id', 'phone_number'])]
-        verbose_name = "اطلاعات تماس"
+        verbose_name = "اطلاعات تماس "
         verbose_name_plural = "اطلاعات تماس پرسنل"

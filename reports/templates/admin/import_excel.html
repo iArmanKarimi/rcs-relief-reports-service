@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="card p-4">
+    <h1 class="mb-4">بارگذاری گزارش اکسل</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-3" style="margin-bottom: 20px;">
+            <!-- Hide the actual input -->
+            <input type="file" name="excel_file" id="file_input" required style="display: none;">
+            
+            <!-- Create a custom button label that triggers the input -->
+            <label for="file_input" style="background-color: #f3f4f6; color: #374151; padding: 8px 16px; border-radius: 4px; border: 1px solid #d1d5db; cursor: pointer; display: inline-block;">
+                انتخاب فایل
+            </label>
+            <span id="file_name" style="margin-right: 10px; color: #6b7280;">هیچ فایلی انتخاب نشده</span>
+        </div>
+        
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="submit" style="background-color: #059669; color: white; padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer;">
+                شروع پردازش
+            </button>
+            <a href="{% url 'admin:reports_employeereport_changelist' %}" 
+               style="background-color: #e5e7eb; color: #374151; padding: 8px 16px; border-radius: 4px; text-decoration: none;">
+                بازگشت
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Add a small script to show the file name once selected -->
+<script>
+    document.getElementById('file_input').addEventListener('change', function() {
+        var fileName = this.files[0] ? this.files[0].name : "هیچ فایلی انتخاب نشده";
+        document.getElementById('file_name').textContent = fileName;
+    });
+</script>
+{% endblock %}

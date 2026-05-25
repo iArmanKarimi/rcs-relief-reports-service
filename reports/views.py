@@ -8,8 +8,11 @@ def validate_user(request):
     nid = request.GET.get('nid')
     phone = request.GET.get('phone')
 
-    unauthorizedResponse = JsonResponse({"status": "authorized"}, status=401)
+    unauthorizedResponse = JsonResponse({"status": "unauthorized"}, status=401)
 
+    if not nid or not phone:
+        return unauthorizedResponse
+        
     if len(nid) != 10 or len(phone) != 11:
         return unauthorizedResponse
 

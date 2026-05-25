@@ -2,10 +2,8 @@
 
 {% block object-tools-items %}
     {{ block.super }}
-    <li>
-        <a href="{% url 'admin:reports_employeereport_import_excel' %}" 
+    <a href="{% url 'admin:reports_employeereport_import_excel' %}" 
         style="background-color: #059669; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none;">
-    بارگذاری فایل اکسل
-</a>
-    </li>
+        <b>بارگذاری فایل اکسل</b>
+    </a>
 {% endblock %}

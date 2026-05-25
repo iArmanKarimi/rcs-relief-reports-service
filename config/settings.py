@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
+from django.templatetags.static import static
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -145,8 +146,8 @@ STATIC_URL = 'static/'
 
 # ─── Unfold Settings ───────────────────────────────────────────────
 UNFOLD = {
-    "SITE_TITLE": "پنل بله",
-    "SITE_HEADER": "پنل توزیع داده‌های بات بله",
+    "SITE_TITLE": "پنل توزیع داده‌های بات بله",
+    "SITE_HEADER": "پنل بات بله",
     "SITE_URL": "/",
     
     # Show the Django admin's default sidebar
@@ -159,7 +160,14 @@ UNFOLD = {
     "EXTRA_STYLES": [
         "https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css",
     ],
-    
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/x-icon",
+            "href": "/static/images/favicon.ico",
+        },
+    ],
     # ── Sidebar ──
     "SIDEBAR": {
         # "show_search": True,

@@ -96,7 +96,7 @@ def import_excel_reports(file_path):
             # 10: Daily Mission Days, 11: Total Overtime, 12: Total Shift Hours
             
             national_id = normalize_excel_value(row[3])
-            if not national_id or not national_id.isdigit():
+            if not national_id or not national_id.isdigit() or len(national_id) != 10:
                 continue # Skip if National ID is missing or not purely digits
 
             reports_to_create.append(

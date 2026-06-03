@@ -1,5 +1,3 @@
-# reports/excel.py
-
 import datetime
 import openpyxl
 from openpyxl import load_workbook
@@ -8,7 +6,7 @@ from .models import EmployeeReport, StaffContact
 
 
 # -------------------------------------------------------
-# ✅ Duration Parser (unchanged - correct implementation)
+# Duration Parser
 # -------------------------------------------------------
 def parse_duration(hhmm: str):
     fallback = {'hours': -1, 'minutes': -1}
@@ -21,14 +19,9 @@ def parse_duration(hhmm: str):
     if len(parts) != 2:
         return fallback
 
-    h_str, m_str = parts[0].strip(), parts[1].strip()
-
-    if not h_str or not m_str:
-        return fallback
-
     try:
-        h = int(h_str)
-        m = int(m_str)
+        h = int(parts[0])
+        m = int(parts[1])
     except ValueError:
         return fallback
 
@@ -39,7 +32,7 @@ def parse_duration(hhmm: str):
 
 
 # -------------------------------------------------------
-# ✅ Normalize Excel Cell Values
+# Normalize Excel Values
 # -------------------------------------------------------
 def normalize_excel_value(value):
     if value is None:
@@ -62,15 +55,10 @@ def normalize_excel_value(value):
 
 
 # -------------------------------------------------------
-# ✅ Proper Excel Time Handling
+# Normalize Excel Time
 # -------------------------------------------------------
 def normalize_time(value):
-    """
-    Handles:
-    - datetime.time objects from Excel
-    - Strings like '08:30'
-    - None
-    """
+
     if isinstance(value, datetime.time):
         return f"{value.hour:02d}:{value.minute:02d}"
 
@@ -79,16 +67,18 @@ def normalize_time(value):
 
     text = str(value).strip()
 
-    # Convert HH:MM:SS → HH:MM
     parts = text.split(":")
     if len(parts) >= 2:
-        return f"{int(parts[0]):02d}:{int(parts[1]):02d}"
+        try:
+            return f"{int(parts[0]):02d}:{int(parts[1]):02d}"
+        except:
+            return "00:00"
 
     return "00:00"
 
 
 # -------------------------------------------------------
-# ✅ Import Employee Performance Reports
+# Import Employee Reports
 # -------------------------------------------------------
 def import_excel_reports(file_path):
 
@@ -98,7 +88,6 @@ def import_excel_reports(file_path):
         sheet = wb.active
 
         reports_to_create = []
-        valid_rows = 0
         skipped_rows = 0
 
         for row in sheet.iter_rows(min_row=2, values_only=True):
@@ -109,12 +98,10 @@ def import_excel_reports(file_path):
 
             national_id = normalize_excel_value(row[3])
 
-            # ✅ Safer National ID validation
             if not national_id.isdigit():
                 skipped_rows += 1
                 continue
 
-            # If Excel removed leading zeros, pad left
             if len(national_id) < 10:
                 national_id = national_id.zfill(10)
 
@@ -122,8 +109,8 @@ def import_excel_reports(file_path):
                 skipped_rows += 1
                 continue
 
-            reports_to_create.append(
-                EmployeeReport(
+            try:
+                report = EmployeeReport(
                     last_name=normalize_excel_value(row[1]),
                     first_name=normalize_excel_value(row[2]),
                     national_id=national_id,
@@ -137,26 +124,38 @@ def import_excel_reports(file_path):
                     total_overtime=normalize_time(row[11]),
                     total_shift_hours=int(normalize_excel_value(row[12]) or 0),
                 )
-            )
 
-            valid_rows += 1
+                reports_to_create.append(report)
 
-        # ✅ Only modify DB if file contains valid rows
-        if reports_to_create:
-            with transaction.atomic():
-                EmployeeReport.objects.all().delete()
-                EmployeeReport.objects.bulk_create(reports_to_create, ignore_conflicts=True)
+            except Exception as e:
+                print(f"Row skipped due to error: {row} -> {e}")
+                skipped_rows += 1
 
-        print(f"Valid rows detected (including duplicates): {valid_rows}")
+        if not reports_to_create:
+            print("⚠ No valid rows detected.")
+            return 0
 
-        return valid_rows
+        with transaction.atomic():
+
+            deleted_count, _ = EmployeeReport.objects.all().delete()
+
+            EmployeeReport.objects.bulk_create(reports_to_create, batch_size=1000)
+
+        inserted_count = EmployeeReport.objects.count()
+
+        print(f"Old rows deleted: {deleted_count}")
+        print(f"Rows prepared: {len(reports_to_create)}")
+        print(f"Rows inserted: {inserted_count}")
+        print(f"Rows skipped: {skipped_rows}")
+
+        return inserted_count
 
     finally:
         wb.close()
 
 
 # -------------------------------------------------------
-# ✅ Import Staff Contacts
+# Import Staff Contacts
 # -------------------------------------------------------
 def import_excel_contacts(file_path):
 
@@ -196,12 +195,14 @@ def import_excel_contacts(file_path):
                 skipped_rows.append(idx)
 
         if contacts_to_create:
-            StaffContact.objects.bulk_create(
+
+            created = StaffContact.objects.bulk_create(
                 contacts_to_create,
                 ignore_conflicts=True
             )
 
-        print(f"✅ Contacts imported: {len(contacts_to_create)}")
+            print(f"Contacts inserted: {len(created)}")
+
         print(f"Skipped rows: {skipped_rows}")
 
         return len(contacts_to_create), skipped_rows

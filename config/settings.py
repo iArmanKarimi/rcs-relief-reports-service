@@ -16,9 +16,7 @@ import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = environ.Env(
-    DEBUG=(bool, False)
-)
+env = environ.Env()
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
@@ -29,14 +27,14 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = True
-SECRET_KEY = 'django-insecure-kukls%)ef5eu3xu68m#r)ep!qc)q+n#oj%y*mv&26e54!0hr&_'
-BALE_BOT_API_KEY = 'CHANGE-ME'
-# DEBUG = env("DEBUG")
-# SECRET_KEY = env("SECRET_KEY")
-# BALE_BOT_API_KEY = env("BALE_BOT_API_KEY")
+DEBUG = env.bool("DEBUG", default=False)
+SECRET_KEY = env('SECRET_KEY')
+BALE_BOT_API_KEY = env('BALE_BOT_API_KEY')
+SECRET_KEY = env("SECRET_KEY")
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+
 
 # Application definition
 

@@ -145,11 +145,9 @@ def import_excel_reports(file_path):
         if reports_to_create:
             with transaction.atomic():
                 EmployeeReport.objects.all().delete()
-                EmployeeReport.objects.bulk_create(reports_to_create)
+                EmployeeReport.objects.bulk_create(reports_to_create, ignore_conflicts=True)
 
-        print(f"✅ Import completed")
-        print(f"Valid rows inserted: {valid_rows}")
-        print(f"Skipped rows: {skipped_rows}")
+        print(f"Valid rows detected (including duplicates): {valid_rows}")
 
         return valid_rows
 

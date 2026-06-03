@@ -5,20 +5,18 @@ from .decorators import require_api_key
 
 @require_api_key
 def validate_user(request):
-    nid = request.GET.get('nid')
     phone = request.GET.get('phone')
 
     unauthorizedResponse = JsonResponse({"status": "unauthorized"}, status=401)
 
-    if not nid or not phone:
+    if not phone:
         return unauthorizedResponse
-        
-    if len(nid) != 10 or len(phone) != 11:
+
+    if len(phone) != 11:
         return unauthorizedResponse
 
     # Check if a contact record exists matching both
-    is_valid = StaffContact.objects.filter(
-        national_id=nid, phone_number=phone).exists()
+    is_valid = StaffContact.objects.filter(phone_number=phone).exists()
 
     if is_valid:
         return JsonResponse({"status": "authorized"}, status=200)
@@ -26,10 +24,20 @@ def validate_user(request):
 
 
 @require_api_key
-def get_report(request, national_id):
-    # Logic to return EmployeeReport data...
+def get_report_by_phone(request):
+    phone = request.GET.get('phone')
+    if not phone or len(phone) != 11:
+        return JsonResponse({"error": "شماره تلفن نامعتبر است"}, status=400)
+
     try:
+        contact = StaffContact.objects.get(phone_number=phone)
+        national_id = getattr(contact, 'national_id', None)
+
+        if not national_id:
+            return JsonResponse({"error": "کد ملی برای این شماره تلفن یافت نشد"}, status=404)
+
         report = EmployeeReport.objects.get(national_id=national_id)
+
         data = {
             "national_id": report.national_id,
             "first_name": report.first_name,
@@ -46,5 +54,9 @@ def get_report(request, national_id):
             "updated_at": report.updated_at.isoformat(),
         }
         return JsonResponse(data)
+    
+    except StaffContact.DoesNotExist:
+        return JsonResponse({"error": "شماره همراه در سیستم ثبت نشده است"}, status=404)
+
     except EmployeeReport.DoesNotExist:
         return JsonResponse({"error": "Report not found"}, status=404)

@@ -132,7 +132,7 @@ def import_excel_reports(file_path):
                 skipped_rows += 1
 
         if not reports_to_create:
-            print("⚠ No valid rows detected.")
+            print("No valid rows detected.")
             return 0
 
         with transaction.atomic():

@@ -157,9 +157,23 @@ def import_excel_reports(file_path):
 # -------------------------------------------------------
 # Import Staff Contacts
 # -------------------------------------------------------
-def import_excel_contacts(file_path):
+from openpyxl import load_workbook
+from .models import StaffContact
 
-    wb = load_workbook(file_path, data_only=True)
+
+def normalize_excel_value(value):
+    if value is None:
+        return ""
+
+    # Excel may store numbers as floats
+    if isinstance(value, float):
+        value = int(value)
+
+    return str(value).strip()
+
+
+def import_excel_contacts(file_path):
+    wb = load_workbook(file_path, data_only=True, read_only=True)
 
     try:
         sheet = wb.active
@@ -185,27 +199,25 @@ def import_excel_contacts(file_path):
 
             if (
                 len(nid) == 10
+                and phone.startswith("09")
                 and len(phone) == 11
                 and phone.isdigit()
             ):
                 contacts_to_create.append(
-                    StaffContact(national_id=nid, phone_number=phone)
+                    StaffContact(
+                        national_id=nid,
+                        phone_number=phone
+                    )
                 )
             else:
                 skipped_rows.append(idx)
 
-        if contacts_to_create:
+        created = StaffContact.objects.bulk_create(
+            contacts_to_create,
+            ignore_conflicts=True
+        )
 
-            created = StaffContact.objects.bulk_create(
-                contacts_to_create,
-                ignore_conflicts=True
-            )
-
-            print(f"Contacts inserted: {len(created)}")
-
-        print(f"Skipped rows: {skipped_rows}")
-
-        return len(contacts_to_create), skipped_rows
+        return len(created), skipped_rows
 
     finally:
         wb.close()

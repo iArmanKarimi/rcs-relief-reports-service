@@ -1,15 +1,26 @@
 import datetime
 import openpyxl
-from openpyxl import load_workbook
+
 from django.db import transaction
 from .models import EmployeeReport, StaffContact
+
+
+# -------------------------------------------------------
+# Convert Persian/Arabic Digits to English Digits
+# -------------------------------------------------------
+def convert_persian_arabic_digits(value):
+    translation_table = str.maketrans(
+        "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩",
+        "01234567890123456789",
+    )
+    return str(value).translate(translation_table)
 
 
 # -------------------------------------------------------
 # Duration Parser
 # -------------------------------------------------------
 def parse_duration(hhmm: str):
-    fallback = {'hours': -1, 'minutes': -1}
+    fallback = {"hours": -1, "minutes": -1}
 
     if not hhmm or not isinstance(hhmm, str):
         return fallback
@@ -28,7 +39,7 @@ def parse_duration(hhmm: str):
     if h < 0 or m < 0 or m > 59:
         return fallback
 
-    return {'hours': h, 'minutes': m}
+    return {"hours": h, "minutes": m}
 
 
 # -------------------------------------------------------
@@ -47,6 +58,7 @@ def normalize_excel_value(value):
         return str(value).strip()
 
     text = str(value).strip()
+    text = convert_persian_arabic_digits(text)
 
     if text.endswith(".0"):
         text = text[:-2]
@@ -55,23 +67,63 @@ def normalize_excel_value(value):
 
 
 # -------------------------------------------------------
+# Normalize National ID
+# -------------------------------------------------------
+def normalize_national_id(value):
+    national_id = normalize_excel_value(value)
+
+    national_id = national_id.replace(" ", "")
+    national_id = national_id.replace("-", "")
+    national_id = national_id.replace("_", "")
+
+    if national_id.isdigit() and len(national_id) < 10:
+        national_id = national_id.zfill(10)
+
+    return national_id
+
+
+# -------------------------------------------------------
+# Normalize Phone Number
+# -------------------------------------------------------
+def normalize_phone(value):
+    phone = normalize_excel_value(value)
+
+    phone = phone.replace(" ", "")
+    phone = phone.replace("-", "")
+    phone = phone.replace("_", "")
+    phone = phone.replace("(", "")
+    phone = phone.replace(")", "")
+    phone = phone.replace("+", "")
+
+    if phone.startswith("0098"):
+        phone = "0" + phone[4:]
+
+    elif phone.startswith("98"):
+        phone = "0" + phone[2:]
+
+    elif phone.startswith("9") and len(phone) == 10:
+        phone = "0" + phone
+
+    return phone
+
+
+# -------------------------------------------------------
 # Normalize Excel Time
 # -------------------------------------------------------
 def normalize_time(value):
-
     if isinstance(value, datetime.time):
         return f"{value.hour:02d}:{value.minute:02d}"
 
     if value is None:
         return "00:00"
 
-    text = str(value).strip()
+    text = normalize_excel_value(value)
 
     parts = text.split(":")
     if len(parts) >= 2:
         try:
             return f"{int(parts[0]):02d}:{int(parts[1]):02d}"
-        except:
+        except Exception:
             return "00:00"
 
     return "00:00"
@@ -81,7 +133,6 @@ def normalize_time(value):
 # Import Employee Reports
 # -------------------------------------------------------
 def import_excel_reports(file_path):
-
     wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
 
     try:
@@ -91,21 +142,13 @@ def import_excel_reports(file_path):
         skipped_rows = 0
 
         for row in sheet.iter_rows(min_row=2, values_only=True):
-
             if not row or len(row) < 13:
                 skipped_rows += 1
                 continue
 
-            national_id = normalize_excel_value(row[3])
+            national_id = normalize_national_id(row[3])
 
-            if not national_id.isdigit():
-                skipped_rows += 1
-                continue
-
-            if len(national_id) < 10:
-                national_id = national_id.zfill(10)
-
-            if len(national_id) != 10:
+            if not national_id.isdigit() or len(national_id) != 10:
                 skipped_rows += 1
                 continue
 
@@ -127,28 +170,17 @@ def import_excel_reports(file_path):
 
                 reports_to_create.append(report)
 
-            except Exception as e:
-                print(f"Row skipped due to error: {row} -> {e}")
+            except Exception:
                 skipped_rows += 1
 
         if not reports_to_create:
-            print("No valid rows detected.")
             return 0
 
         with transaction.atomic():
-
-            deleted_count, _ = EmployeeReport.objects.all().delete()
-
+            EmployeeReport.objects.all().delete()
             EmployeeReport.objects.bulk_create(reports_to_create, batch_size=1000)
 
-        inserted_count = EmployeeReport.objects.count()
-
-        print(f"Old rows deleted: {deleted_count}")
-        print(f"Rows prepared: {len(reports_to_create)}")
-        print(f"Rows inserted: {inserted_count}")
-        print(f"Rows skipped: {skipped_rows}")
-
-        return inserted_count
+        return EmployeeReport.objects.count()
 
     finally:
         wb.close()
@@ -157,23 +189,8 @@ def import_excel_reports(file_path):
 # -------------------------------------------------------
 # Import Staff Contacts
 # -------------------------------------------------------
-from openpyxl import load_workbook
-from .models import StaffContact
-
-
-def normalize_excel_value(value):
-    if value is None:
-        return ""
-
-    # Excel may store numbers as floats
-    if isinstance(value, float):
-        value = int(value)
-
-    return str(value).strip()
-
-
 def import_excel_contacts(file_path):
-    wb = load_workbook(file_path, data_only=True, read_only=True)
+    wb = openpyxl.load_workbook(file_path, data_only=True, read_only=True)
 
     try:
         sheet = wb.active
@@ -182,40 +199,36 @@ def import_excel_contacts(file_path):
         skipped_rows = []
 
         for idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-
             if not row or len(row) < 2:
                 skipped_rows.append(idx)
                 continue
 
-            nid = normalize_excel_value(row[0])
-            phone = normalize_excel_value(row[1])
-
-            if not nid.isdigit():
-                skipped_rows.append(idx)
-                continue
-
-            if len(nid) < 10:
-                nid = nid.zfill(10)
+            national_id = normalize_national_id(row[0])
+            phone = normalize_phone(row[1])
 
             if (
-                len(nid) == 10
-                and phone.startswith("09")
-                and len(phone) == 11
+                national_id.isdigit()
+                and len(national_id) == 10
                 and phone.isdigit()
+                and len(phone) == 11
+                and phone.startswith("09")
             ):
                 contacts_to_create.append(
                     StaffContact(
-                        national_id=nid,
-                        phone_number=phone
+                        national_id=national_id,
+                        phone_number=phone,
                     )
                 )
             else:
                 skipped_rows.append(idx)
 
-        created = StaffContact.objects.bulk_create(
-            contacts_to_create,
-            ignore_conflicts=True
-        )
+        if contacts_to_create:
+            created = StaffContact.objects.bulk_create(
+                contacts_to_create,
+                ignore_conflicts=True,
+            )
+        else:
+            created = []
 
         return len(created), skipped_rows
 
